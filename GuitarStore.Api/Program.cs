@@ -1,3 +1,6 @@
+using GraphQL;
+using GraphQL.Types;
+using GuitarStore.Api.GraphQL;
 
 namespace GuitarStore.Api
 {
@@ -6,30 +9,28 @@ namespace GuitarStore.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddTransient<GuitarType>();
+            builder.Services.AddTransient<GuitarQuery>();
+            builder.Services.AddSingleton<ISchema, GuitarSchema>();
+            builder.Services.AddGraphQL(b => b
+                .AddAutoSchema<GuitarSchema>()
+                .AddSystemTextJson()
+                .AddErrorInfoProvider(opt => opt.ExposeExceptionDetails = true));
 
             var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
+            app.UseGraphQL();
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                app.UseGraphQLAltair();
             }
-
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-
             app.MapControllers();
-
             app.Run();
         }
     }

@@ -29,6 +29,16 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
+    "graphql": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "ui/altair",
+      "applicationUrl": "http://localhost:5012",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
