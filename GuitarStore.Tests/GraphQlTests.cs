@@ -1,9 +1,9 @@
 using GraphQL;
+using GraphQL.Client.Abstractions;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
 using GuitarStore.Api;
 using GuitarStore.Api.Context.Entities;
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GuitarStore.Tests
@@ -65,13 +65,8 @@ namespace GuitarStore.Tests
         private async Task<List<Guitar>> GetAllGuitars()
         {
             var request = new GraphQLRequest { Query = query };
-            var response = await _client.SendQueryAsync<GuitarsResult>(request);
+            var response = await _client.SendQueryAsync(request, () => new { Guitars = new List<Guitar>()});
             return response.Data.Guitars;
-        }
-
-        class GuitarsResult
-        {
-            public List<Guitar> Guitars { get; set; } = null!;
         }
     }
 }
