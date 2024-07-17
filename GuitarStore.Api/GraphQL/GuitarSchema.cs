@@ -20,21 +20,19 @@ namespace GuitarStore.Api.GraphQL
         {
             Field<ListGraphType<GuitarType>>("guitars")
                 .Argument<StringGraphType>("name")
-                .Resolve(context => ResolveGuitars(context));
+                .Resolve(ResolveGuitars);
         }
 
-        private IEnumerable<Guitar> ResolveGuitars(IResolveFieldContext<object?> context)
+        private List<Guitar> ResolveGuitars(IResolveFieldContext<object?> context)
         {
             var scope = context.RequestServices?.CreateScope() ?? throw new NullReferenceException();
             var dbContext = scope.ServiceProvider.GetRequiredService<GuitarsContext>() ?? throw new ArgumentNullException(nameof(GuitarsContext));
-            List<Guitar> result;
+            
             var arg = context.GetArgument<string>("name");
             if (arg is not null)
-                result = dbContext.Guitars.Where(g => g.Name == arg).ToList();
-            else
-                result = dbContext.Guitars.ToList();
-
-            return result;
+                return dbContext.Guitars.Where(g => g.Name == arg).ToList();
+            
+            return dbContext.Guitars.ToList();
         }
     }
 
