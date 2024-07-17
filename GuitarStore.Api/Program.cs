@@ -1,6 +1,8 @@
 using GraphQL;
 using GraphQL.Types;
+using GuitarStore.Api.Context;
 using GuitarStore.Api.GraphQL;
+using Microsoft.EntityFrameworkCore;
 
 namespace GuitarStore.Api
 {
@@ -12,8 +14,11 @@ namespace GuitarStore.Api
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddDbContext<GuitarsContext>(options => options.UseInMemoryDatabase("MyInMemoryDb"));
             builder.Services.AddTransient<GuitarType>();
             builder.Services.AddTransient<GuitarQuery>();
+            builder.Services.AddTransient<GuitarInputType>();
+            builder.Services.AddTransient<GuitarMutation>();
             builder.Services.AddSingleton<ISchema, GuitarSchema>();
             builder.Services.AddGraphQL(b => b
                 .AddAutoSchema<GuitarSchema>()
@@ -21,6 +26,10 @@ namespace GuitarStore.Api
                 .AddErrorInfoProvider(opt => opt.ExposeExceptionDetails = true));
 
             var app = builder.Build();
+            using var scope = app.Services.CreateScope();
+            var context = scope.ServiceProvider.GetService<GuitarsContext>();
+            context!.Database.EnsureCreated();
+
             app.UseGraphQL();
             if (app.Environment.IsDevelopment())
             {
