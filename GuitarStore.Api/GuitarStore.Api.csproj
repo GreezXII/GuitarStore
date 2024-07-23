@@ -29,5 +29,9 @@
   <ItemGroup>
     <Folder Include="Utils\" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="GuitarStore.Tests" />
+  </ItemGroup>
 
 </Project>

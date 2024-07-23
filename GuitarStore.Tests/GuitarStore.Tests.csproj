@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GuitarStore.Api\GuitarStore.Api.csproj" />
+    <ProjectReference Include="..\GuitarStore.Infrastructure\GuitarStore.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
