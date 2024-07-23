@@ -1,6 +1,5 @@
-﻿using GraphQL.Types;
-using GraphQL;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+﻿using GraphQL;
+using GraphQL.Types;
 using GuitarStore.Api.Context;
 using GuitarStore.Api.GraphQL;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +18,7 @@ namespace GuitarStore.Api
             services.AddTransient<GuitarQuery>();
             services.AddTransient<GuitarInputType>();
             services.AddTransient<GuitarMutation>();
+            services.AddTransient<GuitarSubscription>();
             services.AddSingleton<ISchema, GuitarSchema>();
             services.AddGraphQL(b => b
                 .AddAutoSchema<GuitarSchema>()
@@ -32,15 +32,22 @@ namespace GuitarStore.Api
             var context = scope.ServiceProvider.GetService<GuitarsContext>();
             context!.Database.EnsureCreated();
 
+            app.UseWebSockets();
             app.UseGraphQL();
             if (env.IsDevelopment())
             {
+                app.UseOpenApi();
                 app.UseSwagger();
                 app.UseSwaggerUI();
                 app.UseGraphQLAltair();
             }
             app.UseHttpsRedirection();
+            app.UseRouting();
             app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

@@ -1,0 +1,56 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "GuitarStore.Api",
+    "version": "1.0"
+  },
+  "paths": {
+    "/Guitars/GetAllGuitars": {
+      "get": {
+        "tags": [
+          "Guitars"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Guitar"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Guitar"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Guitar"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Guitar": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

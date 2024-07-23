@@ -11,6 +11,7 @@ namespace GuitarStore.Api.GraphQL
         {
             Query = serviceProvider.GetRequiredService<GuitarQuery>();
             Mutation = serviceProvider.GetRequiredService<GuitarMutation>();
+            Subscription = serviceProvider.GetRequiredService<GuitarSubscription>();
         }
     }
 
@@ -61,7 +62,8 @@ namespace GuitarStore.Api.GraphQL
             var arg = context.GetArgument<GuitarInputType>("guitar");
             var newGuitar = new Guitar() { Uid = Guid.NewGuid(), Name = arg.Name };
             dbContext.Guitars.Add(newGuitar);
-            dbContext.SaveChanges();            
+            dbContext.SaveChanges();
+            Observables.ObservableGuitar = new ObservableGuitar(newGuitar);
             return newGuitar;
         }
     }
@@ -72,5 +74,60 @@ namespace GuitarStore.Api.GraphQL
         {
             Field<NonNullGraphType<StringGraphType>>("name");
         }
+    }
+
+    public class GuitarSubscription: ObjectGraphType
+    {
+        public GuitarSubscription()
+        {
+            Field<GuitarType, Guitar>("guitarAdded")
+                .ResolveStream(ResolveStream);
+        }
+
+        private IObservable<Guitar> ResolveStream(IResolveFieldContext<object?> context)
+        {
+            using var scope = context.RequestServices?.CreateScope() ?? throw new NullReferenceException(); ;
+            var dbContext = scope.ServiceProvider.GetRequiredService<GuitarsContext>();
+            if (Observables.ObservableGuitar is null)
+            {
+                Observables.ObservableGuitar = new ObservableGuitar(dbContext.Guitars.FirstOrDefault());
+            }
+            return Observables.ObservableGuitar;
+        }
+    }
+
+    public class ObservableGuitar : IObservable<Guitar>
+    {
+        private readonly List<IObserver<Guitar>> _observers = new();
+        private readonly Guitar _guitar = new();
+
+        public ObservableGuitar(Guitar guitar)
+        {
+            _guitar = guitar;
+        }
+
+        public IDisposable Subscribe(IObserver<Guitar> observer)
+        {
+            _observers.Add(observer);
+            observer.OnNext(_guitar);
+            return new Unsubscriber<Guitar>(_observers, observer);
+        }
+    }
+
+    internal sealed class Unsubscriber<Guitar> : IDisposable
+    {
+        private readonly IList<IObserver<Guitar>> _observers;
+        private readonly IObserver<Guitar> _observer;
+
+        internal Unsubscriber(
+            IList<IObserver<Guitar>> observers,
+            IObserver<Guitar> observer) => (_observers, _observer) = (observers, observer);
+
+        public void Dispose() => _observers.Remove(_observer);
+    }
+
+    public static class Observables
+    {
+        public static ObservableGuitar ObservableGuitar { get; set; }
     }
 }
